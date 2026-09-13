@@ -1,460 +1,356 @@
-## Tên đề tài
+# DPR-AES — Dynamic Partial Reconfiguration for AES on FPGA
 
-**Nghiên cứu cơ chế Dynamic Partial Reconfiguration cho thiết kế mã hóa đối xứng AES trên FPGA**
+> **Nghiên cứu và triển khai Dynamic Partial Reconfiguration (DPR/DFX) cho AES-128 trên FPGA**
 
-## Mục tiêu
+Repository này là workspace triển khai, kiểm chứng và đánh giá một hệ thống **AES-128 có khả năng Dynamic Partial Reconfiguration** trên FPGA. Mục tiêu chính là xây dựng nhiều **AES hardware variants** có cùng chức năng và cùng giao diện, đặt chúng trong một **Reconfigurable Partition (RP)** và thay đổi variant trong quá trình vận hành mà không cần thay đổi toàn bộ thiết kế FPGA.
 
-Đề tài hướng đến việc nghiên cứu và hiện thực cơ chế **Dynamic Partial Reconfiguration (DPR)** cho thiết kế mã hóa đối xứng **AES** trên FPGA. Mục tiêu chính là tạo ra nhiều biến thể phần cứng khác nhau của AES và cho phép hệ thống chuyển đổi giữa các biến thể này trong quá trình vận hành, nhằm làm thay đổi đặc tính thực thi và đặc tính rò rỉ vật lý của thiết kế.
+Version 1 ưu tiên ba yêu cầu:
 
-Mục tiêu cụ thể gồm:
+1. **Correctness** — mọi AES variant phải cho cùng kết quả mã hóa với cùng `key/plaintext`.
+2. **Reconfiguration evidence** — phải chứng minh được quá trình `RM-A → RM-B → RM-A` trên FPGA và AES vẫn đúng sau mỗi lần partial reconfiguration.
+3. **Cost & diversity evidence** — mọi lợi ích từ DPR phải được đánh giá cùng overhead về tài nguyên, timing, hiệu năng, kích thước partial bitstream và thời gian tái cấu hình.
 
-* Tìm hiểu thuật toán AES và các kiến trúc phần cứng AES phổ biến.
-* Tìm hiểu cơ chế Dynamic Partial Reconfiguration trên FPGA.
-* Xây dựng thiết kế AES baseline.
-* Tạo nhiều biến thể AES có cùng chức năng nhưng khác nhau về cấu trúc phần cứng.
-* Tích hợp các biến thể AES vào vùng tái cấu hình động trên FPGA.
-* Xây dựng cơ chế điều khiển chuyển đổi giữa các biến thể AES.
-* Đánh giá thiết kế DPR-AES so với baseline theo các tiêu chí: tài nguyên, hiệu năng, độ trễ tái cấu hình, throughput, công suất và mức độ đa dạng hóa.
-* Phân tích khả năng ứng dụng DPR như một cơ chế Moving Target Defense cho thiết kế mật mã phần cứng.
+> **Lưu ý về security claim:** implementation diversity/DPR có thể được nghiên cứu như một Moving Target Defense primitive, nhưng **không tự động chứng minh side-channel resistance**. Chỉ đưa ra claim định lượng về leakage/SCA khi có measurement methodology và evidence phù hợp.
 
-## Vai trò
+---
 
-AES là thuật toán mã hóa đối xứng được sử dụng rộng rãi trong các hệ thống nhúng, IoT, FPGA-SoC và các thiết bị biên. Về mặt thuật toán, AES được xem là an toàn trong mô hình black-box. Tuy nhiên, khi AES được hiện thực trên phần cứng, quá trình tính toán có thể làm phát sinh các kênh rò rỉ vật lý như công suất tiêu thụ, bức xạ điện từ, thời gian thực thi hoặc đáp ứng lỗi.
+## Sinh viên bắt đầu từ đâu?
 
-Trong các thiết kế FPGA truyền thống, một lõi AES thường có cấu trúc cố định trong suốt thời gian hoạt động. Điều này tạo điều kiện cho đối thủ thu thập nhiều mẫu đo trên cùng một cấu hình phần cứng để xây dựng mô hình rò rỉ. Cơ chế **Dynamic Partial Reconfiguration** cho phép thay đổi một phần mạch FPGA trong khi phần còn lại của hệ thống vẫn hoạt động. Nhờ đó, thiết kế AES có thể được triển khai dưới nhiều biến thể vật lý khác nhau và được thay đổi theo thời gian, theo số lần mã hóa hoặc theo chính sách bảo mật.
-
-Trong bối cảnh **Moving Target Defense**, DPR-AES có thể được xem là cơ chế làm dịch chuyển **physical leakage surface** của thiết kế mật mã. Thay vì để attacker quan sát một cấu hình AES cố định, hệ thống liên tục hoặc định kỳ thay đổi cấu trúc thực thi, vị trí logic, định tuyến, S-box, pipeline hoặc các nguồn nhiễu đi kèm. Điều này làm giảm khả năng tái sử dụng trace, tăng số lượng mẫu cần thu thập và làm tăng chi phí phân tích của attacker.
-
-Mô hình tổng quát:
+Nếu đây là lần đầu làm việc với repository, **không bắt đầu bằng việc tạo DFX project hoặc sửa RTL ngay**. Hãy đọc và thực hiện theo thứ tự:
 
 ```text
-Static Region
-  - CPU / Controller
-  - AXI Bus
-  - Memory
-  - DPR Manager
-  - Interface logic
-
-Partial Reconfigurable Region
-  - AES Variant 1
-  - AES Variant 2
-  - AES Variant 3
-  - AES Variant N
+README.md
+   ↓
+docs/development-workflow.md
+   ↓
+docs/roadmap.md
+   ↓
+docs/architecture.md
+   ↓
+docs/references.md
+   ↓
+docs/toolchain.md
+   ↓
+docs/fpga-deployment.md
+   ↓
+Issue #1 — Master Control
+   ↓
+Issue #2 — P0: Foundation, Toolchain & AES Baseline
 ```
 
-Trong quá trình vận hành:
+### 1. Hiểu project và cách làm việc
+
+Đọc trước:
+
+- **README này** — hiểu mục tiêu, phạm vi và kết quả cuối cùng.
+- **[Development Workflow](docs/development-workflow.md)** — quy trình bắt buộc `main → phase branch → PR → instructor review → merge`.
+- **[Roadmap](docs/roadmap.md)** — các Phase P0–P4 và điều kiện hoàn thành từng Phase.
+
+### 2. Hiểu kiến trúc trước khi implement
+
+Đọc:
+
+- **[Architecture](docs/architecture.md)** — Static Region, Reconfigurable Partition, Reconfigurable Module và interface/lifecycle của AES RM.
+- **[AES Baseline](docs/aes-baseline.md)** — cách freeze AES core, revision, configuration và known-answer tests.
+- **[References](docs/references.md)** — tài liệu AES, DPR/DFX và implementation diversity cần đọc.
+- **[Toolchain](docs/toolchain.md)** — simulation, synthesis và Vivado/DFX flow.
+- **[FPGA Deployment](docs/fpga-deployment.md)** — hardware bring-up và partial-reconfiguration validation.
+
+### 3. Theo dõi công việc qua GitHub Issues
+
+Toàn bộ Version 1 được quản lý tại **[#1 — Master Control](https://github.com/IC-design-lab-HCMUT/DPR-AES/issues/1)**.
+
+| Phase | Issue | Mục tiêu chính |
+|---|---|---|
+| P0 — Foundation, Toolchain & AES Baseline | [#2](https://github.com/IC-design-lab-HCMUT/DPR-AES/issues/2) | Freeze board/toolchain, AES-128 baseline, DFX smoke test |
+| P1 — DPR Architecture & Variant Design | [#3](https://github.com/IC-design-lab-HCMUT/DPR-AES/issues/3) | Freeze Static/RP boundary, RM interface và variant plan |
+| P2 — AES Variants & Functional Verification | [#4](https://github.com/IC-design-lab-HCMUT/DPR-AES/issues/4) | Implement tối thiểu 2 RM và chứng minh functional equivalence |
+| P3 — DFX Integration & Runtime Reconfiguration | [#5](https://github.com/IC-design-lab-HCMUT/DPR-AES/issues/5) | Full/partial bitstreams, FPGA swap và runtime reconfiguration |
+| P4 — Evaluation, Reproducibility & Release | [#6](https://github.com/IC-design-lab-HCMUT/DPR-AES/issues/6) | Matched evaluation, clean-clone reproduction và release |
+
+### 4. Task đầu tiên
+
+**Bắt đầu từ [Issue #2 — P0](https://github.com/IC-design-lab-HCMUT/DPR-AES/issues/2).**
+
+Trước khi làm P0:
+
+```bash
+git checkout main
+git pull origin main
+git switch -c phase/p0-foundation-baseline
+git push -u origin phase/p0-foundation-baseline
+```
+
+Khi P0 hoàn thành, tạo Pull Request:
 
 ```text
-Plaintext + Key
-      |
-      v
-AES Variant hiện tại
-      |
-      v
-Ciphertext
-
-Sau một số chu kỳ / một số block / một sự kiện bảo mật:
-      |
-      v
-DPR Controller nạp partial bitstream mới
-      |
-      v
-AES Variant khác được kích hoạt
+phase/p0-foundation-baseline → main
 ```
 
-## Nội dung nghiên cứu
+Sinh viên **không tự merge**. Instructor review, yêu cầu chỉnh sửa nếu cần, merge khi PASS, cập nhật/đóng issue và xác nhận Phase tiếp theo.
 
-### 1. Nghiên cứu thuật toán AES và kiến trúc phần cứng AES
+> **Nguyên tắc:** chỉ làm Phase đang được instructor xác nhận START; không tự chuyển Phase khi gate hiện tại chưa PASS.
 
-Sinh viên cần tìm hiểu:
+---
 
-* Cấu trúc thuật toán AES.
-* Các bước chính: SubBytes, ShiftRows, MixColumns, AddRoundKey.
-* Key expansion.
-* AES-128 là phạm vi khuyến nghị cho giai đoạn đầu.
-* Các kiến trúc phần cứng AES:
+## 1. Project Scope
 
-  * iterative AES,
-  * pipelined AES,
-  * unrolled AES,
-  * table-based S-box,
-  * composite-field S-box,
-  * BRAM-based S-box.
+### In Scope — Version 1
 
-### 2. Xây dựng thiết kế AES baseline (Dùng Opensource có sẵn)
+- Thuật toán: **AES-128**.
+- Block size: **128 bit**.
+- Một static AES baseline có known-answer-test evidence.
+- Tối thiểu **2 AES hardware variants** có cùng external interface và cùng functional behavior.
+- Khuyến nghị baseline variants:
+  - `RM-A`: LUT/logic-based S-box;
+  - `RM-B`: BRAM/distributed-memory-based S-box.
+- Static Region + một Reconfigurable Partition.
+- Full bitstream + partial bitstream cho từng RM.
+- Hardware reconfiguration `RM-A ↔ RM-B`.
+- Correctness test trước và sau partial reconfiguration.
+- Runtime reconfiguration path phù hợp với board đã freeze ở P0.
+- Matched evaluation: `LUT`, `FF`, `BRAM`, `DSP`, `Fmax`, latency, throughput, partial-bitstream size và reconfiguration latency.
+- Structural/physical diversity analysis dựa trên implementation evidence.
 
-### 3. Thiết kế các biến thể AES
+### Out of Scope — Version 1
 
-Mục tiêu của DPR-AES là tạo nhiều biến thể có cùng chức năng mã hóa nhưng khác nhau về cấu trúc phần cứng.
+Các nội dung sau không phải blocking requirement:
 
-#### Biến thể 1: AES S-box LUT-based
+- AES-192/AES-256 support.
+- Thay đổi thuật toán AES hoặc đề xuất cryptographic primitive mới.
+- Nhiều hơn 2–3 variants trước khi baseline DFX ổn định.
+- Randomized/event-triggered policy trước khi deterministic runtime reconfiguration chạy đúng.
+- Fault-injection countermeasure hoàn chỉnh.
+- Secure key provisioning/Root of Trust hoàn chỉnh.
+- Chứng minh side-channel resistance nếu chưa có trace acquisition + leakage methodology.
+- Tuyên bố power estimate hoặc resource diversity là bằng chứng SCA resistance.
 
-S-box được hiện thực bằng lookup table trong logic FPGA.
+---
 
-Đặc điểm:
+## 2. Kiến trúc tổng quan
 
-* Dễ hiện thực.
-* Tốc độ cao.
-* Dễ dùng làm baseline.
-
-#### Biến thể 2: AES S-box BRAM-based
-
-S-box được lưu trong BRAM hoặc distributed RAM.
-
-Đặc điểm:
-
-* Thay đổi tài nguyên sử dụng.
-* Thay đổi vị trí rò rỉ so với LUT-based S-box.
-* Phù hợp với FPGA.
-
-#### Biến thể 3: AES S-box composite-field
-
-S-box được hiện thực bằng mạch logic theo trường hữu hạn.
-
-Đặc điểm:
-
-* Cấu trúc logic khác LUT-based.
-* Có thể tạo đặc tính switching khác.
-* Phù hợp để tạo implementation diversity.
-
-#### Biến thể 4: AES có dummy/noise logic
-
-Bổ sung logic giả hoặc nguồn nhiễu hoạt động song song với AES.
-
-Đặc điểm:
-
-* Làm nhiễu trace công suất.
-* Có thể bật/tắt hoặc thay đổi theo cấu hình.
-* Cần kiểm soát overhead tài nguyên và công suất.
-
-#### Biến thể 5: AES pipeline khác nhau
-
-Tạo các phiên bản AES có mức pipeline khác nhau.
-
-Ví dụ:
-
-* AES iterative 10 rounds.
-* AES có pipeline từng round.
-* AES có pipeline ở một số khối S-box/MixColumns.
-
-Đặc điểm:
-
-* Thay đổi timing behavior.
-* Thay đổi throughput/latency.
-* Có thể làm thay đổi pattern rò rỉ theo thời gian.
-
-Khuyến nghị cho sinh viên:
-
-* Mức cơ bản: tạo 2 biến thể AES, ví dụ LUT-Sbox và BRAM-Sbox.
-* Mức khá: tạo 3–4 biến thể AES, thêm composite-field hoặc dummy logic.
-* Mức nâng cao: tạo nhiều biến thể cùng chức năng nhưng khác placement/routing bằng flow DPR.
-
-### 4. Thiết kế kiến trúc DPR-AES
-
-Kiến trúc đề xuất gồm hai phần:
-
-#### Static Region
-
-Phần tĩnh không thay đổi trong quá trình vận hành.
-
-Bao gồm:
-
-* Controller.
-* Bus interface.
-* Input/output register.
-* Key/plaintext/ciphertext buffer.
-* DPR manager.
-* Interface wrapper giữa static region và partial region.
-* Optional: CPU mềm hoặc ARM PS nếu dùng Zynq/Kria.
-
-#### Partial Reconfigurable Region
-
-Phần có thể tái cấu hình động.
-
-Bao gồm:
-
-* AES Variant 1.
-* AES Variant 2.
-* AES Variant 3.
-* AES Variant N.
-
-Các biến thể phải có cùng giao diện để có thể thay thế lẫn nhau.
-
-Giao diện vùng DPR nên được chuẩn hóa:
-
-```verilog
-module aes_pr_region (
-    input  wire         clk,
-    input  wire         rst_n,
-    input  wire         start,
-    input  wire [127:0] plaintext,
-    input  wire [127:0] key,
-    output wire [127:0] ciphertext,
-    output wire         done
-);
-```
-
-Yêu cầu quan trọng:
-
-* Mọi AES variant phải tương thích cùng một interface.
-* Static region không cần biết bên trong đang là biến thể nào.
-* Sau khi nạp partial bitstream mới, hệ thống cần reset hoặc re-initialize AES region trước khi chạy.
-* Cần có cơ chế kiểm tra variant đã nạp thành công.
-
-### 5. Chính sách tái cấu hình
-
-Sinh viên có thể nghiên cứu các chính sách chuyển đổi biến thể:
-
-#### Chính sách 1: Periodic reconfiguration
-
-Thay đổi AES variant sau một khoảng thời gian cố định.
-
-Ví dụ:
+Baseline tĩnh:
 
 ```text
-Mỗi 1000 block AES -> đổi variant
+Key + Plaintext
+      │
+      ▼
+┌───────────────┐
+│ Static AES-128│
+└───────┬───────┘
+        │
+        ▼
+   Ciphertext
 ```
 
-Ưu điểm:
-
-* Dễ hiện thực.
-* Dễ kiểm thử.
-
-Nhược điểm:
-
-* Nếu chu kỳ cố định, attacker có thể học quy luật.
-
-#### Chính sách 2: Randomized reconfiguration
-
-Thay đổi AES variant theo số ngẫu nhiên.
-
-Ví dụ:
+DPR-AES:
 
 ```text
-Sau N block, với N được sinh ngẫu nhiên trong [Nmin, Nmax]
+┌──────────────────────── Static Region ────────────────────────┐
+│ Controller / Host Interface                                  │
+│ Key + Plaintext Registers                                    │
+│ Reconfiguration Manager                                      │
+│ Quiesce / Reset / Status                                     │
+│                         │                                    │
+│                         ▼                                    │
+│              ┌──── Reconfigurable Partition ────┐            │
+│              │ RM-A: AES-128 Variant A          │            │
+│              │          or                       │            │
+│              │ RM-B: AES-128 Variant B          │            │
+│              └───────────────────────────────────┘            │
+│                         │                                    │
+│                         ▼                                    │
+│                    Ciphertext                                │
+└───────────────────────────────────────────────────────────────┘
 ```
 
-Ưu điểm:
-
-* Khó dự đoán hơn.
-* Phù hợp hơn với MTD.
-
-Nhược điểm:
-
-* Cần nguồn ngẫu nhiên đủ tốt.
-* Khó debug hơn.
-
-#### Chính sách 3: Event-triggered reconfiguration
-
-Thay đổi AES variant khi có sự kiện bảo mật.
-
-Ví dụ:
-
-* Số lượng truy cập vượt ngưỡng.
-* Phát hiện lỗi bất thường.
-* Phát hiện thay đổi công suất/clock/voltage.
-* Nhận lệnh từ security monitor.
-
-## Các bước thực hiện
-
-### Bước 1: Khảo sát tài liệu
-
-Sinh viên cần đọc và tóm tắt:
-
-* Thuật toán AES.
-* Các kiến trúc AES phần cứng.
-* Dynamic Partial Reconfiguration trên FPGA.
-* Các công trình dùng implementation diversity và partial reconfiguration để bảo vệ mạch mật mã.
-
-### Bước 2: Chọn nền tảng FPGA và công cụ
-
-Khuyến nghị dùng Xilinx vì Vivado hỗ trợ flow Dynamic Function eXchange khá rõ.
-
-Các lựa chọn phù hợp:
-
-* Artix-7.
-* Kintex-7.
-* Zynq-7000.
-* Zynq UltraScale+.
-* Kria KV260.
-* PYNQ-Z2 nếu chỉ làm demo nhỏ.
-
-Nếu dùng Intel/Altera, có thể khảo sát flow Partial Reconfiguration trong Quartus, nhưng độ thuận tiện phụ thuộc board và license.
-
-Sản phẩm:
-
-* Chọn board hoặc target FPGA.
-* Cài đặt tool.
-* Chạy được ví dụ DPR/DFX mẫu.
-* Báo cáo lựa chọn nền tảng.
-
-### Bước 3: Hiện thực AES baseline
-
-Thực hiện:
-
-* Lấy một AES RTL open-source hoặc tự hiện thực AES-128.
-* Viết testbench.
-* Chạy test vector chuẩn.
-* Tổng hợp baseline trên FPGA.
-* Ghi nhận tài nguyên, timing, throughput và latency.
-
-Sản phẩm:
-
-* AES baseline chạy đúng.
-* Testbench.
-* Báo cáo tài nguyên baseline.
-
-### Bước 4: Tạo các biến thể AES
-
-Thực hiện:
-
-* Tạo ít nhất hai biến thể AES có cùng giao diện.
-* Đảm bảo tất cả biến thể cho cùng ciphertext với cùng plaintext/key.
-* Kiểm tra từng biến thể bằng cùng bộ test vector.
-* Tổng hợp từng biến thể riêng để so sánh tài nguyên.
-
-Ví dụ:
+Runtime lifecycle tối thiểu:
 
 ```text
-AES_V1: LUT-based S-box
-AES_V2: BRAM-based S-box
-AES_V3: Composite-field S-box
-AES_V4: LUT-based S-box + dummy noise logic
+RUN RM-A
+   ↓
+QUIESCE
+   ↓
+PARTIAL RECONFIGURE
+   ↓
+RESET / RE-INITIALIZE RP
+   ↓
+VERIFY STATUS
+   ↓
+RUN RM-B
 ```
 
-Sản phẩm:
+Chi tiết xem [docs/architecture.md](docs/architecture.md).
 
-* RTL của các biến thể.
-* Testbench chung.
-* Bảng so sánh tài nguyên và timing từng biến thể.
+---
 
-### Bước 5: Thiết kế static wrapper và PR interface
+## 3. Threat Model và Security Objective
 
-Thực hiện:
+Version 1 không bắt đầu bằng claim “DPR chống side-channel”. Mục tiêu khoa học/kỹ thuật trước tiên là chứng minh:
 
-* Thiết kế wrapper cố định.
-* Định nghĩa interface giữa static region và partial region.
-* Đảm bảo interface ổn định cho mọi biến thể.
-* Thêm register đầu vào/đầu ra để tránh lỗi khi tái cấu hình.
-* Thêm tín hiệu reset cho PR region.
+- một attacker/observer phải đối mặt với **nhiều implementation state** thay vì một implementation cố định;
+- các implementation state có cùng AES function nhưng khác microarchitecture/resource/placement evidence;
+- hệ thống có thể chuyển implementation state bằng partial reconfiguration;
+- chi phí của việc chuyển state được đo định lượng.
 
-Sản phẩm:
+Nếu có thiết bị đo power/EM và methodology phù hợp, leakage/SCA evaluation có thể được bổ sung ở P4. Nếu không, kết luận phải giới hạn ở **correctness + DPR mechanism + implementation diversity + overhead**.
 
-* Static wrapper.
-* PR interface.
-* Sơ đồ kiến trúc hệ thống.
+---
 
-### Bước 6: Thiết lập flow DPR/DFX
+## 4. Tool & Hardware Flow
 
-### Bước 7: Điều khiển tái cấu hình
+Flow Version 1:
 
-### Bước 8: Kiểm thử chức năng DPR-AES
+```text
+AES RTL / RM Variants
+        │
+        ▼
+Simulation / Regression
+        │
+        ▼
+Per-RM Synthesis
+        │
+        ▼
+Vivado DFX Project
+        │
+        ├── Static Design
+        ├── RM-A configuration
+        └── RM-B configuration
+        │
+        ▼
+Full + Partial Bitstreams
+        │
+        ▼
+FPGA Bring-up
+        │
+        ├── AES correctness
+        ├── RM-A ↔ RM-B swap
+        └── Reconfiguration measurement
+```
 
-Kịch bản kiểm thử:
+Tool chính:
 
-1. Nạp full bitstream.
-2. Chạy AES Variant 1 với test vector.
-3. Ghi nhận ciphertext.
-4. Nạp partial bitstream Variant 2.
-5. Reset PR region.
-6. Chạy lại cùng test vector.
-7. Kiểm tra ciphertext giống Variant 1.
-8. Lặp lại với các variant khác.
+- **Vivado** — synthesis, implementation, DFX, bitstream và hardware bring-up;
+- **Verilator / simulator phù hợp** — functional regression;
+- **GTKWave** — waveform khi cần;
+- **Python** — test vectors, regression và result processing;
+- **Vitis/PetaLinux hoặc host software** — chỉ khi target runtime path cần PS/software support.
 
-### Bước 9: Đánh giá overhead
+Tool/version cụ thể được freeze tại P0, không hard-code trước khi chọn board.
 
-Các tiêu chí cần đo:
+---
 
-#### Tài nguyên
+## 5. Kết quả mong đợi
 
-* LUT.
-* FF.
-* BRAM.
-* DSP.
-* Diện tích vùng PR.
-* Tài nguyên static region.
-* Tài nguyên controller DPR.
+Version 1 cần có tối thiểu:
 
-#### Timing
+- AES-128 baseline simulation PASS.
+- Exact baseline source/revision/configuration được ghi lại.
+- Tối thiểu 2 AES variants có cùng interface.
+- Known-answer tests và randomized functional regression PASS cho mọi RM.
+- Static/RP/RM architecture được freeze trước implementation.
+- Full bitstream và partial bitstream cho từng RM.
+- Hardware demo `RM-A → RM-B → RM-A` PASS.
+- Ciphertext đúng sau mỗi lần partial reconfiguration.
+- Matched result table:
 
-* Fmax từng variant.
-* Critical path.
-* Timing closure của từng reconfigurable module.
+| Metric | Static baseline | RM-A | RM-B | DPR notes |
+|---|---:|---:|---:|---|
+| LUT | TBD | TBD | TBD | TBD |
+| FF | TBD | TBD | TBD | TBD |
+| BRAM | TBD | TBD | TBD | TBD |
+| DSP | TBD | TBD | TBD | TBD |
+| Fmax | TBD | TBD | TBD | same constraint |
+| Latency/block | TBD | TBD | TBD | — |
+| Throughput | TBD | TBD | TBD | — |
+| Partial bitstream size | N/A | TBD | TBD | — |
+| Reconfiguration latency | N/A | TBD | TBD | method documented |
 
-#### Hiệu năng
+---
 
-* Latency một lần mã hóa.
-* Throughput.
-* Số chu kỳ mỗi block AES.
-* Thời gian tái cấu hình.
-* Kích thước partial bitstream.
-* Tỷ lệ thời gian hữu ích so với thời gian tái cấu hình.
+## 6. Documentation
 
-#### Công suất
+Đọc theo thứ tự:
 
-* Dynamic power.
-* Static power.
-* Power estimate từ Vivado/Quartus.
-* Optional: đo công suất thực tế nếu có thiết bị.
+1. **[Development Workflow](docs/development-workflow.md)** — branch/PR/review/evidence workflow.
+2. **[Roadmap](docs/roadmap.md)** — canonical P0–P4 roadmap và gates.
+3. **[Architecture](docs/architecture.md)** — Static/RP/RM boundaries và lifecycle.
+4. **[AES Baseline](docs/aes-baseline.md)** — freeze AES baseline và verification contract.
+5. **[References](docs/references.md)** — reading list và tài liệu cần bổ sung trong P0.
+6. **[Toolchain](docs/toolchain.md)** — simulation/synthesis/DFX environment.
+7. **[FPGA Deployment](docs/fpga-deployment.md)** — bring-up và partial-reconfiguration evidence.
 
+---
 
-## Tools / Open-source
+## 7. Repository Structure dự kiến
 
-### FPGA Design
+```text
+DPR-AES/
+├── README.md
+├── docs/
+│   ├── development-workflow.md
+│   ├── roadmap.md
+│   ├── architecture.md
+│   ├── aes-baseline.md
+│   ├── references.md
+│   ├── toolchain.md
+│   └── fpga-deployment.md
+├── rtl/
+│   ├── static/
+│   ├── common/
+│   └── rm/
+│       ├── aes_rm_a/
+│       └── aes_rm_b/
+├── tb/
+├── scripts/
+├── fpga/
+│   ├── common/
+│   └── <target-board>/
+├── software/
+└── results/
+    ├── simulation/
+    ├── synthesis/
+    ├── dfx/
+    └── hardware/
+```
 
-* Vivado Xilinx.
-* Vivado Dynamic Function eXchange / Partial Reconfiguration flow.
-* Intel Quartus Partial Reconfiguration, nếu dùng FPGA Intel/Altera.
-* Vitis hoặc PetaLinux nếu dùng Zynq/ZynqMP.
-* Xilinx ICAP/PCAP interface.
-* AXI GPIO / AXI DMA / AXI Lite nếu tích hợp với ARM PS.
+Các thư mục implementation được tạo dần theo Phase; không tạo placeholder rỗng chỉ để “đủ cây thư mục”.
 
-### RTL và mô phỏng
+---
 
-* Verilog/SystemVerilog hoặc VHDL.
-* Verilator.
-* QuestaSim/ModelSim.
-* Icarus Verilog cho thiết kế đơn giản.
-* GTKWave.
-* Python test script.
+## 8. Nguyên tắc thực hiện
 
-### AES open-source cores
+- **Branch before work:** mỗi Phase bắt đầu từ `main` mới nhất và dùng branch riêng.
+- **PR before merge:** mọi thay đổi phải qua review trước khi merge.
+- **Baseline before variants:** phải freeze AES baseline trước khi tạo implementation diversity.
+- **Architecture before DFX:** freeze Static/RP/RM contract trước khi tạo DFX project chính thức.
+- **Equivalent function:** mọi RM phải giữ cùng AES functional semantics.
+- **Matched comparison:** dùng cùng device, tool version, clock constraint và measurement method.
+- **Evidence before claim:** correctness, DPR, cost, diversity và security claim đều cần evidence tương ứng.
+- **Reproducibility:** người khác phải clone repository và tái chạy được flow chính bằng documented commands.
+- **Security-claim discipline:** không đồng nhất “khác implementation” với “đã chống side-channel”.
 
-* secworks/aes.
-* OpenTitan AES core.
-* tiny_aes hoặc AES Verilog/VHDL cores dùng cho tham khảo.
-* AES S-box LUT/composite-field implementations.
+---
 
-## Kết quả mong đợi
-* AES baseline chạy đúng trên mô phỏng.
-* Ít nhất hai biến thể AES có cùng chức năng nhưng khác kiến trúc phần cứng.
-* Thiết kế DPR-AES có static region và partial reconfigurable region.
-* Sinh được full bitstream và partial bitstreams.
-* Thực hiện được quá trình thay đổi AES variant bằng partial reconfiguration.
-* Kiểm tra được ciphertext đúng sau mỗi lần tái cấu hình.
-* Có bảng so sánh tài nguyên, timing, latency, throughput và reconfiguration time.
-* Có đánh giá định tính hoặc định lượng về mức độ đa dạng hóa phần cứng.
-* Có phân tích về lợi ích và giới hạn của DPR trong bảo vệ AES trước side-channel/fault-oriented threat model.
+## 9. Master Control
 
-## Phạm vi đề tài đề xuất
+Bắt đầu tại:
 
-* AES-128/256/512 
-* Hai/Ba biến thể AES.
-* Partial reconfiguration offline bằng Vivado Hardware Manager.
-* Đánh giá chức năng, tài nguyên và timing.
+- [#1 — DPR-AES Version 1 Master Control](https://github.com/IC-design-lab-HCMUT/DPR-AES/issues/1)
+- [#2 — P0: Foundation, Toolchain & AES Baseline](https://github.com/IC-design-lab-HCMUT/DPR-AES/issues/2)
 
+Version 1 chỉ được xem là hoàn thành khi có đủ:
 
-## Các tiêu chí đánh giá
-
-| Nhóm tiêu chí    | Nội dung đo                                                      |
-| ---------------- | ---------------------------------------------------------------- |
-| Chức năng        | AES test vector, correctness sau DPR                             |
-| Tài nguyên       | LUT, FF, BRAM, DSP, diện tích PR region                          |
-| Timing           | Fmax, critical path, timing closure                              |
-| Hiệu năng        | Latency, throughput, cycles/block                                |
-| DPR overhead     | Partial bitstream size, reconfiguration time                     |
-| Công suất        | Dynamic power, static power, switching activity                  |
-
-## Tài liệu tham khảo 
-
-Tôi khuyến nghị triển khai đề tài này theo lộ trình **AES baseline → nhiều biến thể AES → DPR offline → DPR runtime → đánh giá leakage**. Với sinh viên tiền nghiên cứu, mức hợp lý nhất là tạo **2–3 biến thể AES** và chứng minh partial reconfiguration chạy đúng; phần đo side-channel có thể để thành hướng mở rộng.
+```text
+AES Correctness Evidence
+        +
+Variant Equivalence Evidence
+        +
+DFX/Reconfiguration Evidence
+        +
+Cost & Timing Evidence
+        +
+Reproducibility Evidence
+        =
+DPR-AES Version 1 Complete
+```
