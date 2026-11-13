@@ -1,0 +1,98 @@
+============================================================
+ AES-256 DPR NIST ECB KAT VERIFICATION
+============================================================
+NIST directory: /home/ubuntu/benchmarks
+============================================================
+
+============================================================
+RM: LUT
+Partial: /home/ubuntu/aes256_lut_partial.bit.bin
+============================================================
+Time taken to load BIN is 8.000000 Milli Seconds
+BIN FILE loaded through FPGA manager successfully
+DPR load time: 49.553436 ms
+  ECBGFSbox256.rsp   : 5 cases processed
+  ECBKeySbox256.rsp  : 16 cases processed
+  ECBVarKey256.rsp   : 256 cases processed
+  ECBVarTxt256.rsp   : 128 cases processed
+
+LUT summary:
+  TOTAL          : 405
+  PASS           : 405
+  FAIL           : 0
+  READY TIMEOUT  : 0
+  DONE TIMEOUT   : 0
+
+============================================================
+RM: BRAM
+Partial: /home/ubuntu/aes256_bram_partial.bit.bin
+============================================================
+Time taken to load BIN is 7.000000 Milli Seconds
+BIN FILE loaded through FPGA manager successfully
+DPR load time: 47.795388 ms
+  ECBGFSbox256.rsp   : 5 cases processed
+  ECBKeySbox256.rsp  : 16 cases processed
+  ECBVarKey256.rsp   : 256 cases processed
+  ECBVarTxt256.rsp   : 128 cases processed
+
+BRAM summary:
+  TOTAL          : 405
+  PASS           : 405
+  FAIL           : 0
+  READY TIMEOUT  : 0
+  DONE TIMEOUT   : 0
+
+============================================================
+RM: COMPOSITE
+Partial: /home/ubuntu/aes256_composite_partial.bit.bin
+============================================================
+Time taken to load BIN is 8.000000 Milli Seconds
+BIN FILE loaded through FPGA manager successfully
+DPR load time: 48.133652 ms
+  ECBGFSbox256.rsp   : 5 cases processed
+  ECBKeySbox256.rsp  : 16 cases processed
+  ECBVarKey256.rsp   : 256 cases processed
+  ECBVarTxt256.rsp   : 128 cases processed
+
+COMPOSITE summary:
+  TOTAL          : 405
+  PASS           : 405
+  FAIL           : 0
+  READY TIMEOUT  : 0
+  DONE TIMEOUT   : 0
+
+============================================================
+RM: NOISE
+Partial: /home/ubuntu/aes256_dummy_noise_partial.bit.bin
+============================================================
+Time taken to load BIN is 7.000000 Milli Seconds
+BIN FILE loaded through FPGA manager successfully
+DPR load time: 47.926889 ms
+  ECBGFSbox256.rsp   : 5 cases processed
+  ECBKeySbox256.rsp  : 16 cases processed
+  ECBVarKey256.rsp   : 256 cases processed
+  ECBVarTxt256.rsp   : 128 cases processed
+
+NOISE summary:
+  TOTAL          : 405
+  PASS           : 405
+  FAIL           : 0
+  READY TIMEOUT  : 0
+  DONE TIMEOUT   : 0
+
+============================================================
+ FINAL SUMMARY
+============================================================
+LUT        TOTAL=405   PASS=405   FAIL=0     READY_TO=0     DONE_TO=0    
+BRAM       TOTAL=405   PASS=405   FAIL=0     READY_TO=0     DONE_TO=0    
+COMPOSITE  TOTAL=405   PASS=405   FAIL=0     READY_TO=0     DONE_TO=0    
+NOISE      TOTAL=405   PASS=405   FAIL=0     READY_TO=0     DONE_TO=0    
+------------------------------------------------------------
+GRAND TOTAL      : 1620
+GRAND PASS       : 1620
+GRAND FAIL       : 0
+READY TIMEOUT    : 0
+DONE TIMEOUT     : 0
+CSV              : aes256_dpr_nist_results.csv
+RESULT           : ALL TESTS PASS
+============================================================

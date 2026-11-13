@@ -1,0 +1,123 @@
+============================================================
+ AES-256 REPLICA NIST ECB KAT VERIFICATION
+============================================================
+NIST directory: /home/ubuntu/benchmarks
+Replica must already be Active_slot = 0
+============================================================
+
+============================================================
+CORE: LUT
+HOLD/RELEASE: 0x1 -> 0x0
+============================================================
+Replica switch time: 2.680 us
+RM_CONTROL readback: 0x00000000
+  ECBGFSbox256.rsp   : 5 cases processed
+  ECBKeySbox256.rsp  : 16 cases processed
+    ECBVarKey256.rsp: 50 cases, PASS=71 FAIL=0 READY_TO=0 DONE_TO=0
+    ECBVarKey256.rsp: 100 cases, PASS=121 FAIL=0 READY_TO=0 DONE_TO=0
+    ECBVarKey256.rsp: 150 cases, PASS=171 FAIL=0 READY_TO=0 DONE_TO=0
+    ECBVarKey256.rsp: 200 cases, PASS=221 FAIL=0 READY_TO=0 DONE_TO=0
+    ECBVarKey256.rsp: 250 cases, PASS=271 FAIL=0 READY_TO=0 DONE_TO=0
+  ECBVarKey256.rsp   : 256 cases processed
+    ECBVarTxt256.rsp: 50 cases, PASS=327 FAIL=0 READY_TO=0 DONE_TO=0
+    ECBVarTxt256.rsp: 100 cases, PASS=377 FAIL=0 READY_TO=0 DONE_TO=0
+  ECBVarTxt256.rsp   : 128 cases processed
+
+LUT summary:
+  TOTAL          : 405
+  PASS           : 405
+  FAIL           : 0
+  READY TIMEOUT  : 0
+  DONE TIMEOUT   : 0
+
+============================================================
+CORE: BRAM
+HOLD/RELEASE: 0x3 -> 0x2
+============================================================
+Replica switch time: 0.770 us
+RM_CONTROL readback: 0x00000002
+  ECBGFSbox256.rsp   : 5 cases processed
+  ECBKeySbox256.rsp  : 16 cases processed
+    ECBVarKey256.rsp: 50 cases, PASS=71 FAIL=0 READY_TO=0 DONE_TO=0
+    ECBVarKey256.rsp: 100 cases, PASS=121 FAIL=0 READY_TO=0 DONE_TO=0
+    ECBVarKey256.rsp: 150 cases, PASS=171 FAIL=0 READY_TO=0 DONE_TO=0
+    ECBVarKey256.rsp: 200 cases, PASS=221 FAIL=0 READY_TO=0 DONE_TO=0
+    ECBVarKey256.rsp: 250 cases, PASS=271 FAIL=0 READY_TO=0 DONE_TO=0
+  ECBVarKey256.rsp   : 256 cases processed
+    ECBVarTxt256.rsp: 50 cases, PASS=327 FAIL=0 READY_TO=0 DONE_TO=0
+    ECBVarTxt256.rsp: 100 cases, PASS=377 FAIL=0 READY_TO=0 DONE_TO=0
+  ECBVarTxt256.rsp   : 128 cases processed
+
+BRAM summary:
+  TOTAL          : 405
+  PASS           : 405
+  FAIL           : 0
+  READY TIMEOUT  : 0
+  DONE TIMEOUT   : 0
+
+============================================================
+CORE: COMPOSITE
+HOLD/RELEASE: 0x5 -> 0x4
+============================================================
+Replica switch time: 0.790 us
+RM_CONTROL readback: 0x00000004
+  ECBGFSbox256.rsp   : 5 cases processed
+  ECBKeySbox256.rsp  : 16 cases processed
+    ECBVarKey256.rsp: 50 cases, PASS=71 FAIL=0 READY_TO=0 DONE_TO=0
+    ECBVarKey256.rsp: 100 cases, PASS=121 FAIL=0 READY_TO=0 DONE_TO=0
+    ECBVarKey256.rsp: 150 cases, PASS=171 FAIL=0 READY_TO=0 DONE_TO=0
+    ECBVarKey256.rsp: 200 cases, PASS=221 FAIL=0 READY_TO=0 DONE_TO=0
+    ECBVarKey256.rsp: 250 cases, PASS=271 FAIL=0 READY_TO=0 DONE_TO=0
+  ECBVarKey256.rsp   : 256 cases processed
+    ECBVarTxt256.rsp: 50 cases, PASS=327 FAIL=0 READY_TO=0 DONE_TO=0
+    ECBVarTxt256.rsp: 100 cases, PASS=377 FAIL=0 READY_TO=0 DONE_TO=0
+  ECBVarTxt256.rsp   : 128 cases processed
+
+COMPOSITE summary:
+  TOTAL          : 405
+  PASS           : 405
+  FAIL           : 0
+  READY TIMEOUT  : 0
+  DONE TIMEOUT   : 0
+
+============================================================
+CORE: NOISE
+HOLD/RELEASE: 0x7 -> 0x6
+============================================================
+Replica switch time: 0.780 us
+RM_CONTROL readback: 0x00000006
+  ECBGFSbox256.rsp   : 5 cases processed
+  ECBKeySbox256.rsp  : 16 cases processed
+    ECBVarKey256.rsp: 50 cases, PASS=71 FAIL=0 READY_TO=0 DONE_TO=0
+    ECBVarKey256.rsp: 100 cases, PASS=121 FAIL=0 READY_TO=0 DONE_TO=0
+    ECBVarKey256.rsp: 150 cases, PASS=171 FAIL=0 READY_TO=0 DONE_TO=0
+    ECBVarKey256.rsp: 200 cases, PASS=221 FAIL=0 READY_TO=0 DONE_TO=0
+    ECBVarKey256.rsp: 250 cases, PASS=271 FAIL=0 READY_TO=0 DONE_TO=0
+  ECBVarKey256.rsp   : 256 cases processed
+    ECBVarTxt256.rsp: 50 cases, PASS=327 FAIL=0 READY_TO=0 DONE_TO=0
+    ECBVarTxt256.rsp: 100 cases, PASS=377 FAIL=0 READY_TO=0 DONE_TO=0
+  ECBVarTxt256.rsp   : 128 cases processed
+
+NOISE summary:
+  TOTAL          : 405
+  PASS           : 405
+  FAIL           : 0
+  READY TIMEOUT  : 0
+  DONE TIMEOUT   : 0
+
+============================================================
+ FINAL SUMMARY
+============================================================
+LUT        TOTAL=405   PASS=405   FAIL=0     READY_TO=0     DONE_TO=0    
+BRAM       TOTAL=405   PASS=405   FAIL=0     READY_TO=0     DONE_TO=0    
+COMPOSITE  TOTAL=405   PASS=405   FAIL=0     READY_TO=0     DONE_TO=0    
+NOISE      TOTAL=405   PASS=405   FAIL=0     READY_TO=0     DONE_TO=0    
+------------------------------------------------------------
+GRAND TOTAL      : 1620
+GRAND PASS       : 1620
+GRAND FAIL       : 0
+READY TIMEOUT    : 0
+DONE TIMEOUT     : 0
+CSV              : aes256_replica_nist_results.csv
+RESULT           : ALL TESTS PASS
+============================================================
